@@ -4,15 +4,25 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"pokedex-repl/internal/pkcache"
+	"pokedex-repl/internal/pki"
 	"strings"
 )
 
-func startRepl() {
+type config struct {
+	pokeapiClient    pki.Client
+	nextLocationsURL *string
+	prevLocationsURL *string
+	cache            *pkcache.Cache
+}
+
+func startRepl(cfg *config) {
 	fmt.Println("Welcome to Pokedex type help to display available commands")
 	reader := bufio.NewScanner(os.Stdin)
 	for {
 		fmt.Print("Pokedex > ")
 		reader.Scan()
+
 		words := cleanInput(reader.Text())
 		if len(words) == 0 {
 			continue
@@ -20,7 +30,7 @@ func startRepl() {
 		commandName := words[0]
 		command, exist := getCommands()[commandName]
 		if exist {
-			err := command.callback()
+			err := command.callback(cfg)
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -41,7 +51,7 @@ func cleanInput(text string) []string {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func() error
+	callback    func(*config) error
 }
 
 func getCommands() map[string]cliCommand {
@@ -56,11 +66,21 @@ func getCommands() map[string]cliCommand {
 			description: "Exit the program",
 			callback:    commandExit,
 		},
+		"map": {
+			name:        "map",
+			description: "fetch 20 location-area calls the next 20 upon calling it again",
+			callback:    commandMapNext,
+		},
+		"mapb": {
+			name:        "mapb",
+			description: "fetch the last 20 location-area its a way to go back from map",
+			callback:    commandMapPrev,
+		},
 	}
 	return commands
 }
 
-func commandHelp() error {
+func commandHelp(*config) error {
 	fmt.Println()
 	fmt.Println("Here are the command available to use in pokedex: ")
 	fmt.Println()
@@ -71,7 +91,7 @@ func commandHelp() error {
 	return nil
 }
 
-func commandExit() error {
+func commandExit(*config) error {
 	os.Exit(0)
 	return nil
 }
