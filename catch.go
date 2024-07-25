@@ -11,7 +11,7 @@ func catch(cfg *config, pokemon *string) error {
 	if pokemon == nil {
 		return errors.New("no argument given to explore please give an area or location name or their id")
 	} else if _, ok := cfg.pokedex[*pokemon]; ok {
-		return errors.New("This pokemon is already caught check out your pokedex")
+		return errors.New("this pokemon is already caught check out your pokedex")
 	}
 
 	pokemonInfo, err := cfg.pokeapiClient.PokeInfo(pokemon)

@@ -3,19 +3,11 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/eikonoklastess/pokedex-repl/internal/pkcache"
-	"github.com/eikonoklastess/pokedex-repl/internal/pki"
 	"os"
 	"strings"
-)
 
-type config struct {
-	pokeapiClient    pki.Client
-	nextLocationsURL *string
-	prevLocationsURL *string
-	cache            *pkcache.Cache
-	pokedex          map[string]pki.RespShallowPokemon
-}
+	"github.com/eikonoklastess/pokedex-repl/internal/pki"
+)
 
 func startRepl(cfg *config) {
 	fmt.Println("Welcome to Pokedex type help to display available commands")
@@ -46,6 +38,13 @@ func startRepl(cfg *config) {
 			continue
 		}
 	}
+}
+
+type config struct {
+	pokeapiClient    pki.Client
+	nextLocationsURL *string
+	prevLocationsURL *string
+	pokedex          map[string]pki.RespShallowPokemon
 }
 
 func cleanInput(text string) []string {
