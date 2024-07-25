@@ -1,19 +1,16 @@
 package main
 
 import (
-	"pokedex-repl/internal/pkcache"
-	"pokedex-repl/internal/pki"
+	"github.com/eikonoklastess/pokedex-repl/internal/pki"
 	"time"
 )
 
 func main() {
-	pokeClient := pki.NewClient(5 * time.Second)
-	cache := pkcache.NewCache(1 * time.Minute)
+	pokeClient := pki.NewClient(10*time.Second, time.Minute*5)
 	cfg := &config{
-		pokeapiClient:    pokeClient,
-		cache:            &cache,
-		nextLocationsURL: nil,
-		prevLocationsURL: nil,
+		pokeapiClient: pokeClient,
+		pokedex:       make(map[string]pki.RespShallowPokemon),
 	}
+
 	startRepl(cfg)
 }

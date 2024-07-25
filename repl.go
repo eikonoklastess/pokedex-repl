@@ -3,9 +3,9 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/eikonoklastess/pokedex-repl/internal/pkcache"
+	"github.com/eikonoklastess/pokedex-repl/internal/pki"
 	"os"
-	"pokedex-repl/internal/pkcache"
-	"pokedex-repl/internal/pki"
 	"strings"
 )
 
@@ -14,6 +14,7 @@ type config struct {
 	nextLocationsURL *string
 	prevLocationsURL *string
 	cache            *pkcache.Cache
+	pokedex          map[string]pki.RespShallowPokemon
 }
 
 func startRepl(cfg *config) {
@@ -28,9 +29,14 @@ func startRepl(cfg *config) {
 			continue
 		}
 		commandName := words[0]
+		var cliArg *string
+		if len(words) > 1 {
+			arg := words[1]
+			cliArg = &arg
+		}
 		command, exist := getCommands()[commandName]
 		if exist {
-			err := command.callback(cfg)
+			err := command.callback(cfg, cliArg)
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -51,7 +57,7 @@ func cleanInput(text string) []string {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*config) error
+	callback    func(*config, *string) error
 }
 
 func getCommands() map[string]cliCommand {
@@ -76,11 +82,32 @@ func getCommands() map[string]cliCommand {
 			description: "fetch the last 20 location-area its a way to go back from map",
 			callback:    commandMapPrev,
 		},
+		"explore": {
+			name:        "explore",
+			description: "add to explore as an argument a location or area by their name of id to obtain a list of all possible pokemon in this area",
+			callback:    explore,
+		},
+		"catch": {
+			name:        "catch",
+			description: "enter a pokemon name to try and catch it if you succeed the pokemon is transferd to your pokedex",
+			callback:    catch,
+		},
+		"inspect": {
+			name:        "inspect",
+			description: "inspect a pokemon present in your pokedex shows their name, height, weight, base stats and their type",
+			callback:    inspect,
+		},
+		"pokedex": {
+			name:        "pokedex",
+			description: "shows the pokemons in your pokedex",
+			callback:    pokedex,
+		},
 	}
+
 	return commands
 }
 
-func commandHelp(*config) error {
+func commandHelp(*config, *string) error {
 	fmt.Println()
 	fmt.Println("Here are the command available to use in pokedex: ")
 	fmt.Println()
@@ -91,7 +118,7 @@ func commandHelp(*config) error {
 	return nil
 }
 
-func commandExit(*config) error {
+func commandExit(*config, *string) error {
 	os.Exit(0)
 	return nil
 }
